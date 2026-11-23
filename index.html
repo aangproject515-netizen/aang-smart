@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Aang's Mart - Retail POS & Planogram System</title>
+<link rel="icon" href="aang'smartlogo.jpg" type="image/jpeg">
 <style>
   :root {
     --red: #C81E1E;
@@ -73,6 +74,41 @@
     cursor: pointer;
   }
   .btn-back:active { transform: scale(0.97); }
+
+  /* LOGO LOGIN & DASHBOARD */
+  .login-logo {
+    display: block;
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 16px;
+    margin: 0 auto 10px auto;
+    box-shadow: 0 2px 8px rgba(127, 29, 29, 0.18);
+  }
+  .dash-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .dash-logo {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 12px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(127, 29, 29, 0.16);
+  }
+  .dash-brand-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--red);
+    line-height: 1.2;
+  }
+  .dash-brand-sub {
+    font-size: 12px;
+    color: var(--red-darker);
+    margin-top: 2px;
+  }
 
   /* LAYOUT */
   .container {
@@ -425,7 +461,8 @@
   <!-- ==================== 1. LOGIN ==================== -->
   <div id="scrLogin" class="screen active">
     <div class="card">
-      <div class="card-title">Login Karyawan Aang's Mart</div>
+      <img src="aang'smartlogo.jpg" alt="Logo Aang's Mart" class="login-logo">
+      <div class="card-title" style="text-align:center;margin-bottom:12px">Login Karyawan Aang's Mart</div>
       <label for="etUser">Username (admin / kasir / pramuniaga)</label>
       <input id="etUser" type="text" value="admin" onkeydown="if(event.key==='Enter') doLogin()">
       <label for="etPass">Password (default: 123)</label>
@@ -437,6 +474,15 @@
 
   <!-- ==================== 2. DASHBOARD ==================== -->
   <div id="scrHome" class="screen">
+    <!-- BANNER LOGO DI DASHBOARD UTAMA -->
+    <div class="card dash-brand">
+      <img src="aang'smartlogo.jpg" alt="Logo Aang's Mart" class="dash-logo">
+      <div>
+        <div class="dash-brand-title">Aang's Mart</div>
+        <div class="dash-brand-sub">Dashboard Operasional Toko</div>
+      </div>
+    </div>
+
     <div class="stat-grid">
       <div class="stat-box omzet">
         <div class="stat-lbl">Omzet Hari Ini</div>
@@ -713,7 +759,7 @@
 
 <script>
 // =========================================================================
-// KONFIGURASI API SERVICE (SAMA PERSIS DENGAN ApiService.kt)
+// KONFIGURASI API SERVICE
 // =========================================================================
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkK09zswSMsvOM1oejoSsF8e15JuQiSYjUtPTUeiGihzBETuXIbkvKs4OnuLcKF_GL/exec";
 
@@ -798,7 +844,6 @@ async function callApi(action, payload = {}) {
 }
 
 function printHtmlDocument(title, html) {
-  // Menggunakan hidden iframe agar tidak terblokir popup blocker di HP maupun PC
   const existing = document.getElementById("__printFrame");
   if (existing) existing.remove();
   const iframe = document.createElement("iframe");
@@ -1532,7 +1577,6 @@ function handlePhotoPick(input, slot) {
   reader.onload = e => {
     const img = new Image();
     img.onload = () => {
-      // Kompres gambar agar ringan diupload ke GAS/Drive (max lebar 1024px, JPEG 75%)
       const maxW = 1024;
       let w = img.width, h = img.height;
       if (w > maxW) {
