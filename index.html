@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Aang's Mart - Retail POS & Planogram System</title>
+<style>
+  :root {
+    --red: #C81E1E;
+    --red-dark: #991B1B;
+    --red-darker: #7F1D1D;
+    --yellow: #FACC15;
+    --yellow-soft: #FEF08A;
+    --yellow-pale: #FEF9C3;
+    --bg: #FFFBEB;
+    --card: #FFFFFF;
+    --border: #FDE68A;
+    --text: #1F2937;
+    --muted: #6B7280;
+    --green-bg: #D8E8DF;
+    --green-text: #1B4332;
+    --green-border: #2D6A4F;
+    --err-bg: #FEE2E2;
+    --err-border: #DC2626;
+  }
+
+  * {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    padding-bottom: 40px;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--red);
+    color: #FFFFFF;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 4px solid var(--yellow);
+    box-shadow: 0 2px 8px rgba(127, 29, 29, 0.2);
+  }
+  .topbar h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+  }
+  .topbar small {
+    display: block;
+    font-size: 12px;
+    color: var(--yellow-soft);
+    margin-top: 2px;
+  }
+  .btn-back {
+    background: var(--yellow);
+    color: var(--red-darker);
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .btn-back:active { transform: scale(0.97); }
+
+  /* LAYOUT */
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 14px;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid #F3E8C8;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(127, 29, 29, 0.06);
+  }
+  .card-title {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--red-dark);
+  }
+  .hint-text {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+  }
+
+  /* STAT CARDS */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stat-box {
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+  .stat-box.omzet { background: #FEF08A; color: #7F1D1D; }
+  .stat-box.label { background: #FEE2E2; color: #7F1D1D; }
+  .stat-box.low   { background: #FECACA; color: #7F1D1D; }
+  .stat-box.trx   { background: #FEF9C3; color: #713F12; }
+  .stat-lbl {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .stat-val {
+    font-size: 18px;
+    font-weight: 900;
+    margin-top: 4px;
+  }
+
+  /* DASHBOARD MENU */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .menu-btn {
+    background: #FFFFFF;
+    border: 1px solid #F3E8C8;
+    border-radius: 14px;
+    height: 88px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--red-dark);
+    font-weight: 800;
+    font-size: 13px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(127, 29, 29, 0.06);
+  }
+  .menu-btn:hover { background: #FFFDF5; border-color: var(--yellow); }
+  .menu-btn:active { transform: scale(0.98); }
+  .menu-btn .ico { font-size: 22px; line-height: 1; }
+
+  /* FORM & BUTTONS */
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--red-dark);
+    margin: 8px 0 4px;
+  }
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #FFFFFF;
+    color: var(--text);
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 2px rgba(200, 30, 30, 0.14);
+  }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .row-inline { display: flex; gap: 8px; align-items: center; }
+  .row-inline > :first-child { flex: 1; }
+
+  .btn {
+    width: 100%;
+    padding: 11px 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-red { background: var(--red); color: #FFFFFF; }
+  .btn-darkred { background: var(--red-dark); color: #FFFFFF; }
+  .btn-darker { background: var(--red-darker); color: var(--yellow-soft); }
+  .btn-yellow { background: var(--yellow); color: var(--red-darker); }
+  .btn-amber { background: #B45309; color: #FFFFFF; }
+  .btn-green { background: var(--green-border); color: #FFFFFF; }
+  .btn-pink { background: #C85A6B; color: #FFFFFF; }
+  .btn-sm {
+    width: auto;
+    padding: 8px 12px;
+    font-size: 12px;
+    margin-top: 0;
+    white-space: nowrap;
+  }
+  .btn-maxdis-menu {
+    height: 62px;
+    background: var(--yellow);
+    color: var(--red-darker);
+    font-size: 14px;
+    margin-top: 0;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(250, 204, 21, 0.35);
+  }
+
+  /* LIST ITEMS & CARDS */
+  .list-item {
+    border: 1px solid #E5E2D9;
+    background: #FFFBEB;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: var(--red-dark);
+  }
+  .list-item.promo { background: #FEF08A; border-color: #D97706; }
+  .list-item.ok { background: var(--green-bg); border-color: var(--green-border); color: var(--green-text); }
+  .list-item.late, .list-item.void { background: var(--err-bg); border-color: var(--err-border); color: #991B1B; }
+  .list-item.clickable { cursor: pointer; }
+  .list-item.clickable:hover { filter: brightness(0.97); }
+
+  .flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .qty-input {
+    width: 68px !important;
+    text-align: center;
+    padding: 8px 6px;
+    font-weight: 700;
+  }
+
+  /* PLANOGRAM SHELF BOX */
+  .shelf-box {
+    background: #FEF9C3;
+    border: 1.5px solid var(--red-dark);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  .shelf-title {
+    font-weight: 800;
+    color: var(--red-dark);
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .plano-row {
+    background: #FFFFFF;
+    border: 1px solid #FDE68A;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  /* MAXDIS TIMER & PHOTO */
+  .info-banner {
+    background: var(--yellow-pale);
+    color: var(--red-darker);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12px;
+    margin-top: 8px;
+    line-height: 1.5;
+    white-space: pre-line;
+  }
+  .timer-box {
+    background: var(--yellow-soft);
+    border: 1.5px solid var(--red-dark);
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 12px;
+    text-align: center;
+  }
+  .timer-box.running {
+    background: var(--green-bg);
+    border-color: var(--green-border);
+  }
+  .timer-box.late {
+    background: var(--err-bg);
+    border-color: var(--err-border);
+  }
+  .timer-val {
+    font-size: 34px;
+    font-weight: 900;
+    color: var(--red-dark);
+    line-height: 1.1;
+  }
+  .timer-box.running .timer-val { color: var(--green-text); }
+  .timer-box.late .timer-val { color: var(--err-border); }
+  .timer-status {
+    font-size: 12px;
+    font-weight: 800;
+    margin-top: 4px;
+    color: var(--red-darker);
+  }
+  .timer-box.running .timer-status { color: var(--green-border); }
+  .timer-box.late .timer-status { color: #B91C1C; }
+
+  .photo-preview {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-top: 6px;
+    background: #FEF3C7;
+    border: 1px solid #FDE68A;
+    display: none;
+  }
+
+  .divider {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 10px 0;
+  }
+
+  /* LOADER & TOAST */
+  #loaderOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(127, 29, 29, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+  }
+  .loader-card {
+    background: #FFFFFF;
+    padding: 18px 24px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--red-dark);
+    font-weight: 800;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #FEE2E2;
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #toastBox {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1F2937;
+    color: #FFFFFF;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 1000;
+    display: none;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+
+  .drive-links {
+    margin-top: 4px;
+    font-size: 11px;
+  }
+  .drive-links a {
+    color: inherit;
+    font-weight: 800;
+    margin-right: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div id="loaderOverlay">
+  <div class="loader-card">
+    <div class="spinner"></div>
+    <span>Memproses data...</span>
+  </div>
+</div>
+
+<div id="toastBox"></div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <h1 id="tvTopTitle">Aang's Mart</h1>
+    <small id="tvTopSub">Retail POS &amp; Planogram System</small>
+  </div>
+  <button id="btnBack" class="btn-back" style="display:none" onclick="handleBackClick()">← Menu</button>
+</div>
+
+<div class="container">
+
+  <!-- ==================== 1. LOGIN ==================== -->
+  <div id="scrLogin" class="screen active">
+    <div class="card">
+      <div class="card-title">Login Karyawan Aang's Mart</div>
+      <label for="etUser">Username (admin / kasir / pramuniaga)</label>
+      <input id="etUser" type="text" value="admin" onkeydown="if(event.key==='Enter') doLogin()">
+      <label for="etPass">Password (default: 123)</label>
+      <input id="etPass" type="password" value="123" onkeydown="if(event.key==='Enter') doLogin()">
+      <button class="btn btn-red" onclick="doLogin()">Masuk Sistem</button>
+      <button class="btn btn-yellow" onclick="doInitDb()">Inisialisasi Database Sheet (Pertama Kali)</button>
+    </div>
+  </div>
+
+  <!-- ==================== 2. DASHBOARD ==================== -->
+  <div id="scrHome" class="screen">
+    <div class="stat-grid">
+      <div class="stat-box omzet">
+        <div class="stat-lbl">Omzet Hari Ini</div>
+        <div class="stat-val" id="tvStOmzet">Rp 0</div>
+      </div>
+      <div class="stat-box label">
+        <div class="stat-lbl">Label Belum Cetak</div>
+        <div class="stat-val" id="tvStLabels">0</div>
+      </div>
+      <div class="stat-box low">
+        <div class="stat-lbl">Stok Kritis (PB)</div>
+        <div class="stat-val" id="tvStLow">0</div>
+      </div>
+      <div class="stat-box trx">
+        <div class="stat-lbl">Transaksi Hari Ini</div>
+        <div class="stat-val" id="tvStTrx">0</div>
+      </div>
+    </div>
+
+    <div class="menu-grid">
+      <button class="menu-btn" onclick="openScreen('scrPOS', 'POS Kasir & Shift')">
+        <span class="ico">🧾</span>
+        <span>POS Kasir &amp; Shift</span>
+      </button>
+      <button class="menu-btn" id="btnMenuLabel" onclick="openScreen('scrLabel', 'Cetak Label Harga')">
+        <span class="ico">🏷️</span>
+        <span id="lblMenuLabelText">Cetak Label Harga</span>
+      </button>
+      <button class="menu-btn" onclick="openScreen('scrPlano', 'Planogram & Cetak Plano')">
+        <span class="ico">📐</span>
+        <span>Planogram &amp; Cetak</span>
+      </button>
+      <button class="menu-btn" onclick="openScreen('scrProduk', 'Master Produk & Harga')">
+        <span class="ico">📦</span>
+        <span>Master Produk</span>
+      </button>
+      <button class="menu-btn" onclick="openScreen('scrSO', 'Stock Opname Parsial')">
+        <span class="ico">📋</span>
+        <span>Stock Opname (SO)</span>
+      </button>
+      <button class="menu-btn" onclick="openScreen('scrPB', 'Permintaan Barang (PB)')">
+        <span class="ico">🚚</span>
+        <span>PB &amp; Receiving</span>
+      </button>
+    </div>
+
+    <button class="btn btn-maxdis-menu" onclick="openScreen('scrMaxdis', 'Maxdis Display per Rak')">
+      📸 Maxdis Display (Per Rak / Semua Rak)
+    </button>
+    <button class="btn btn-red" onclick="goHome()">🔄 Refresh Dashboard</button>
+    <button class="btn btn-darker" onclick="doLogout()">Keluar Akun</button>
+  </div>
+
+  <!-- ==================== 3. POS KASIR & SHIFT ==================== -->
+  <div id="scrPOS" class="screen">
+    <div id="boxOpenShift" class="card" style="display:none">
+      <div class="card-title">Buka Shift Kasir</div>
+      <label for="etModalAwal">Modal Awal Laci (Rp)</label>
+      <input id="etModalAwal" type="number" value="200000">
+      <button class="btn btn-red" onclick="doOpenShift()">Buka Shift Sekarang</button>
+    </div>
+
+    <div id="boxPosMain" style="display:none">
+      <div class="card">
+        <div style="font-weight:800;color:var(--red-dark)" id="tvShiftId">SHF-</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="tvShiftInfo">Modal: Rp 0 | Pickup: Rp 0</div>
+        <div class="row2" style="margin-top:8px">
+          <button class="btn btn-yellow" style="margin-top:0" onclick="promptPickupCash()">Pickup Cash</button>
+          <button class="btn btn-darkred" style="margin-top:0" onclick="promptBlindClosing()">Tutup Shift (Blind)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Scan Barcode / Cari PLU</div>
+        <div class="row-inline">
+          <input id="etScanPos" type="text" placeholder="Scan USB / Ketik PLU, Barcode, Nama..." onkeydown="if(event.key==='Enter'){event.preventDefault();addCartByCode();}">
+          <button class="btn btn-red btn-sm" onclick="addCartByCode()">Tambah</button>
+        </div>
+        <div class="row-inline" style="margin-top:8px">
+          <select id="spQuickProd"></select>
+          <button class="btn btn-yellow btn-sm" onclick="addCartFromSelect()">+ Pilih</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Keranjang Belanja</div>
+        <div id="llCartList"></div>
+        <hr class="divider">
+        <div id="tvPosSub" style="font-size:13px">Subtotal: Rp 0</div>
+        <div id="tvPosDisc" style="font-size:13px;color:#B45309;font-weight:600">Hemat Promo: Rp 0</div>
+        <div id="tvPosGrand" style="font-size:18px;font-weight:900;color:var(--red);margin-top:4px">TOTAL BAYAR: Rp 0</div>
+
+        <div class="row2" style="margin-top:8px">
+          <div>
+            <label for="spMetode">Metode Bayar</label>
+            <select id="spMetode">
+              <option value="TUNAI">TUNAI</option>
+              <option value="QRIS">QRIS</option>
+              <option value="DEBIT">DEBIT</option>
+            </select>
+          </div>
+          <div>
+            <label for="etBayar">Uang Diterima (Rp)</label>
+            <input id="etBayar" type="number" placeholder="0">
+          </div>
+        </div>
+        <button class="btn btn-red" onclick="doCheckout()">Bayar &amp; Cetak Struk</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Riwayat Transaksi &amp; Void Supervisor</div>
+        <div id="llTrxHistory"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 4. MASTER PRODUK ==================== -->
+  <div id="scrProduk" class="screen">
+    <div class="card">
+      <div class="card-title">Tambah / Edit Produk (Ubah Harga = Auto Antrean Label)</div>
+      <div class="row2">
+        <div><label>PLU</label><input id="etPPlu" placeholder="10007"></div>
+        <div><label>Barcode</label><input id="etPBar" placeholder="899..."></div>
+      </div>
+      <label>Nama Produk &amp; Gramasi</label>
+      <input id="etPNama" placeholder="Nama lengkap &amp; gramasi">
+      <div class="row3">
+        <div><label>Kategori</label><input id="etPKat" value="Makanan"></div>
+        <div><label>HPP</label><input id="etPHpp" type="number" placeholder="0"></div>
+        <div><label>Harga Normal</label><input id="etPNorm" type="number" placeholder="0"></div>
+      </div>
+      <div class="row3">
+        <div><label>Promo (0=Off)</label><input id="etPProm" type="number" value="0"></div>
+        <div><label>Mulai Promo</label><input id="etPStart" type="date"></div>
+        <div><label>Akhir Promo</label><input id="etPEnd" type="date"></div>
+      </div>
+      <div class="row3">
+        <div><label>Stok Rak</label><input id="etPSRak" type="number" value="10"></div>
+        <div><label>Stok Gudang</label><input id="etPSGud" type="number" value="20"></div>
+        <div><label>Min Stok</label><input id="etPMin" type="number" value="8"></div>
+      </div>
+      <div class="row-inline" style="margin-top:10px">
+        <button class="btn btn-red" style="margin-top:0;flex:2" onclick="doSaveProduct()">Simpan Produk</button>
+        <button class="btn btn-yellow" style="margin-top:0;flex:1" onclick="resetProductForm()">Reset</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Daftar Master Produk (Tap untuk Edit)</div>
+      <div id="llProdList"></div>
+    </div>
+  </div>
+
+  <!-- ==================== 5. PLANOGRAM & CETAK PLANO ==================== -->
+  <div id="scrPlano" class="screen">
+    <div class="card">
+      <div class="card-title">Atur Posisi Barang di Planogram</div>
+      <div class="row2">
+        <div><label>Kode Rak</label><input id="etPlRak" value="R01-A"></div>
+        <div><label>Nama Rak</label><input id="etPlNamaRak" value="Rak Snack & Mie"></div>
+      </div>
+      <div class="row2">
+        <div><label>Shelving</label><input id="etPlShelf" type="number" value="1"></div>
+        <div><label>Urutan</label><input id="etPlUrut" type="number" value="1"></div>
+      </div>
+      <label>Pilih Produk (PLU)</label>
+      <select id="spPlProd"></select>
+      <div class="row3">
+        <div><label>KK (Facing)</label><input id="etPlKK" type="number" value="3"></div>
+        <div><label>DB (Tier)</label><input id="etPlDB" type="number" value="4"></div>
+        <div><label>AB (Tumpuk)</label><input id="etPlAB" type="number" value="1"></div>
+      </div>
+      <button class="btn btn-red" onclick="doSavePlanogram()">Simpan ke Planogram</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Filter &amp; Cetak Kertas Planogram</div>
+      <select id="spFilterRak" onchange="renderPlanoVisual()" style="margin-bottom:8px"></select>
+      <div class="row2" style="margin-bottom:12px">
+        <button class="btn btn-yellow" style="margin-top:0" onclick="printPlanogramPDF(false)">🖨️ Cetak Plano</button>
+        <button class="btn btn-darkred" style="margin-top:0" onclick="printPlanogramPDF(true)">☁️ Arsip ke Drive</button>
+      </div>
+      <div id="llPlanoVisual"></div>
+    </div>
+  </div>
+
+  <!-- ==================== 6. CETAK LABEL HARGA ==================== -->
+  <div id="scrLabel" class="screen">
+    <div class="card">
+      <div class="card-title">Antrean Cetak Label Harga (Urut Planogram)</div>
+      <p class="hint-text">Otomatis disortir berdasarkan <b>Kode Rak → Shelving → Urutan Kiri-Kanan</b>.</p>
+      <div class="row2">
+        <button class="btn btn-yellow" style="margin-top:0" onclick="printLabelsPDF('ALL', false)">🖨️ Cetak Semua</button>
+        <button class="btn btn-red" style="margin-top:0" onclick="markAllLabelsPrinted()">✓ Tandai Dicetak</button>
+      </div>
+      <div class="row3" style="margin-top:8px">
+        <button class="btn btn-darkred" style="margin-top:0;font-size:12px;padding:9px 6px" onclick="printLabelsPDF('NORMAL', false)">Putih (Normal)</button>
+        <button class="btn btn-yellow" style="margin-top:0;font-size:12px;padding:9px 6px;background:#EAB308" onclick="printLabelsPDF('PROMO', false)">Kuning (Promo)</button>
+        <button class="btn btn-amber" style="margin-top:0;font-size:12px;padding:9px 6px" onclick="printLabelsPDF('ALL', true)">☁️ Drive</button>
+      </div>
+    </div>
+    <div id="llLabelList"></div>
+  </div>
+
+  <!-- ==================== 7. STOCK OPNAME PARSIAL ==================== -->
+  <div id="scrSO" class="screen">
+    <div class="card">
+      <div class="card-title">Stock Opname (SO) Parsial per Rak</div>
+      <select id="spSoRak" onchange="renderSoItems()" style="margin:6px 0 10px"></select>
+      <div id="llSoItems"></div>
+      <button class="btn btn-red" onclick="doSubmitSO()">Simpan &amp; Koreksi Stok SO</button>
+    </div>
+  </div>
+
+  <!-- ==================== 8. PERMINTAAN BARANG (PB) ==================== -->
+  <div id="scrPB" class="screen">
+    <div class="card">
+      <div class="card-title">Permintaan Barang (PB) Otomatis</div>
+      <p class="hint-text">Membuat draf order otomatis untuk barang dengan total stok ≤ Min Stok hingga Max Display.</p>
+      <button class="btn btn-red" onclick="doGeneratePB()">Generate Draf PB Otomatis</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Daftar PB &amp; Penerimaan (Receiving)</div>
+      <div id="llPbList"></div>
+    </div>
+  </div>
+
+  <!-- ==================== 9. MAXDIS DISPLAY (PER RAK / SELURUH RAK) ==================== -->
+  <div id="scrMaxdis" class="screen">
+    <div class="card">
+      <div class="card-title">Maxdis Display per Rak / Seluruh Rak</div>
+      <p class="hint-text">Pilih Rak atau SEMUA RAK → Foto Sebelum → Mulai Maxdis (otomatis 5 menit × jumlah produk) → Isi Qty → Foto Sesudah → Selesai.</p>
+
+      <label for="spMaxdisRak">1. Pilih Rak (atau Seluruh Rak)</label>
+      <select id="spMaxdisRak" onchange="updateMaxdisSelectedInfo()"></select>
+
+      <div id="tvMaxdisInfo" class="info-banner">Memuat daftar rak...</div>
+
+      <!-- LANGKAH 2: FOTO SEBELUM -->
+      <label>2. Wajib Foto Rak SEBELUM Display</label>
+      <input id="inpFotoSebelum" type="file" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoPick(this, 'BEFORE')">
+      <button id="btnFotoSebelum" class="btn btn-yellow" style="margin-top:4px" onclick="document.getElementById('inpFotoSebelum').click()">📷 Ambil Foto Sebelum Display</button>
+      <img id="ivFotoSebelum" class="photo-preview" alt="Foto Sebelum Display">
+
+      <!-- KOTAK TIMER SLA -->
+      <div id="llMaxdisTimerBox" class="timer-box">
+        <div id="tvMaxdisTimer" class="timer-val">05:00</div>
+        <div id="tvMaxdisTimerStatus" class="timer-status">Siap Mulai • Batas 5 Menit × Jumlah Produk</div>
+      </div>
+
+      <button id="btnMulaiMaxdis" class="btn btn-red" onclick="startMaxdis()">▶ Mulai Maxdis Rak Ini</button>
+
+      <!-- AREA SAAT TIMER BERJALAN -->
+      <div id="boxMaxdisRunning" style="display:none;margin-top:12px">
+        <label>3. Daftar Produk &amp; Qty Ditambah ke Rak (Pcs)</label>
+        <div id="llMaxdisItems"></div>
+
+        <label style="margin-top:10px">4. Wajib Foto Rak SESUDAH Display</label>
+        <input id="inpFotoSesudah" type="file" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoPick(this, 'AFTER')">
+        <button id="btnFotoSesudah" class="btn btn-yellow" style="margin-top:4px" onclick="document.getElementById('inpFotoSesudah').click()">📷 Ambil Foto Sesudah Display</button>
+        <img id="ivFotoSesudah" class="photo-preview" alt="Foto Sesudah Display">
+
+        <button id="btnSelesaiMaxdis" class="btn btn-red" style="margin-top:12px" onclick="finishMaxdis()">✓ Selesai Maxdis &amp; Simpan</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Riwayat Maxdis (Merah = Melewati Batas Waktu)</div>
+      <div id="llMaxdisHistory"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// =========================================================================
+// KONFIGURASI API SERVICE (SAMA PERSIS DENGAN ApiService.kt)
+// =========================================================================
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkK09zswSMsvOM1oejoSsF8e15JuQiSYjUtPTUeiGihzBETuXIbkvKs4OnuLcKF_GL/exec";
+
+// STATE APLIKASI
+let userNama = localStorage.getItem("aangsmart_user_nama") || "";
+let userRole = localStorage.getItem("aangsmart_user_role") || "";
+let activeShiftId = "";
+let currentScreenId = "scrLogin";
+
+let products = [];
+let planograms = [];
+let labels = [];
+let cart = [];
+
+// STATE MAXDIS
+let maxdisRunning = false;
+let maxdisStartMs = 0;
+let maxdisStartStr = "";
+let maxdisLimitMs = 5 * 60 * 1000;
+let maxdisTimerHandle = null;
+let activeMaxdisItems = [];
+let fotoSebelumB64 = "";
+let fotoSesudahB64 = "";
+
+// =========================================================================
+// HELPER UI, FORMAT, PRINT & NETWORK
+// =========================================================================
+function esc(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function rp(val) {
+  return "Rp " + Math.round(Number(val || 0)).toLocaleString("id-ID");
+}
+
+function formatNowLocal() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+function formatMinSec(totalSec) {
+  const safe = Math.max(0, Math.floor(totalSec));
+  const mm = String(Math.floor(safe / 60)).padStart(2, "0");
+  const ss = String(safe % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
+}
+
+let toastTimer = null;
+function toast(msg) {
+  const box = document.getElementById("toastBox");
+  box.textContent = msg;
+  box.style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { box.style.display = "none"; }, 2800);
+}
+
+function showLoader(show) {
+  document.getElementById("loaderOverlay").style.display = show ? "flex" : "none";
+}
+
+async function callApi(action, payload = {}) {
+  showLoader(true);
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(Object.assign({ action }, payload))
+    });
+    const text = await res.text();
+    return JSON.parse(text);
+  } catch (err) {
+    return { success: false, message: err.message || "Gagal terhubung ke server GAS" };
+  } finally {
+    showLoader(false);
+  }
+}
+
+function printHtmlDocument(title, html) {
+  // Menggunakan hidden iframe agar tidak terblokir popup blocker di HP maupun PC
+  const existing = document.getElementById("__printFrame");
+  if (existing) existing.remove();
+  const iframe = document.createElement("iframe");
+  iframe.id = "__printFrame";
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+  doc.title = title;
+
+  iframe.onload = () => {
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    }, 250);
+  };
+}
+
+// =========================================================================
+// NAVIGASI
+// =========================================================================
+function showScreen(screenId, title) {
+  document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
+  document.getElementById(screenId).classList.add("active");
+  currentScreenId = screenId;
+  document.getElementById("tvTopTitle").textContent = title || "Aang's Mart";
+  document.getElementById("btnBack").style.display =
+    (screenId === "scrHome" || screenId === "scrLogin") ? "none" : "inline-block";
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function handleBackClick() {
+  if (maxdisRunning) {
+    toast("Selesaikan Maxdis terlebih dahulu! Timer masih berjalan.");
+    return;
+  }
+  goHome();
+}
+
+async function openScreen(screenId, title) {
+  showScreen(screenId, title);
+  if (screenId === "scrPOS") await loadPOS();
+  if (screenId === "scrProduk") await loadProducts();
+  if (screenId === "scrPlano") await loadPlanogram();
+  if (screenId === "scrLabel") await loadLabelQueue();
+  if (screenId === "scrSO") await loadSO();
+  if (screenId === "scrPB") await loadPB();
+  if (screenId === "scrMaxdis") await loadMaxdis();
+}
+
+// =========================================================================
+// 1. LOGIN & DASHBOARD
+// =========================================================================
+async function doInitDb() {
+  const res = await callApi("init");
+  toast(res.success ? res.data : res.message);
+}
+
+async function doLogin() {
+  const username = document.getElementById("etUser").value.trim();
+  const password = document.getElementById("etPass").value.trim();
+  const res = await callApi("login", { username, password });
+  if (!res.success) return toast(res.message);
+  userNama = res.data.nama;
+  userRole = res.data.role;
+  localStorage.setItem("aangsmart_user_nama", userNama);
+  localStorage.setItem("aangsmart_user_role", userRole);
+  goHome();
+}
+
+function doLogout() {
+  userNama = "";
+  userRole = "";
+  localStorage.removeItem("aangsmart_user_nama");
+  localStorage.removeItem("aangsmart_user_role");
+  document.getElementById("tvTopSub").textContent = "Retail POS & Planogram System";
+  showScreen("scrLogin", "Aang's Mart");
+}
+
+async function goHome() {
+  showScreen("scrHome", "Aang's Mart");
+  document.getElementById("tvTopSub").textContent = `${userNama} (${userRole})`;
+  const res = await callApi("getDashboard");
+  if (!res.success) return toast(res.message);
+  const d = res.data || {};
+  document.getElementById("tvStOmzet").textContent = rp(d.omzetHariIni || 0);
+  const pending = Number(d.pendingLabels || 0);
+  document.getElementById("tvStLabels").textContent = pending;
+  document.getElementById("tvStLow").textContent = Number(d.lowStockCount || 0);
+  document.getElementById("tvStTrx").textContent = Number(d.jumlahTrxHariIni || 0);
+  document.getElementById("lblMenuLabelText").textContent =
+    pending > 0 ? `Cetak Label (${pending})` : "Cetak Label Harga";
+}
+
+// =========================================================================
+// 2. POS KASIR & SHIFT
+// =========================================================================
+async function loadPOS() {
+  const resShift = await callApi("getActiveShift", { kasir: userNama });
+  const shiftObj = resShift.success ? resShift.data : null;
+
+  if (!shiftObj) {
+    activeShiftId = "";
+    document.getElementById("boxOpenShift").style.display = "block";
+    document.getElementById("boxPosMain").style.display = "none";
+  } else {
+    activeShiftId = shiftObj.ShiftID;
+    document.getElementById("boxOpenShift").style.display = "none";
+    document.getElementById("boxPosMain").style.display = "block";
+    document.getElementById("tvShiftId").textContent = activeShiftId;
+    document.getElementById("tvShiftInfo").textContent =
+      `Modal: ${rp(shiftObj.ModalAwal)} | Pickup: ${rp(shiftObj.PickupCash)}`;
+    await loadProductsForPos();
+    await loadTrxHistory();
+    renderCart();
+  }
+}
+
+async function loadProductsForPos() {
+  const res = await callApi("getProducts");
+  if (!res.success) return;
+  products = res.data || [];
+  const sel = document.getElementById("spQuickProd");
+  sel.innerHTML = products.map((p, idx) =>
+    `<option value="${idx}">${esc(p.PLU)} - ${esc(p.NamaProduk)} (${rp(p.HargaAktif)})</option>`
+  ).join("");
+}
+
+async function doOpenShift() {
+  const modalAwal = Number(document.getElementById("etModalAwal").value || 0);
+  const res = await callApi("openShift", { kasir: userNama, modalAwal });
+  if (res.success) {
+    toast("Shift dibuka!");
+    loadPOS();
+  } else toast(res.message);
+}
+
+async function promptPickupCash() {
+  const nom = prompt("Masukkan nominal uang tunai yang disetor ke brankas (Rp):", "100000");
+  if (nom === null || nom.trim() === "") return;
+  const res = await callApi("pickupCash", { kasir: userNama, nominal: Number(nom) || 0 });
+  if (res.success) {
+    toast("Pickup tercatat!");
+    loadPOS();
+  } else toast(res.message);
+}
+
+async function promptBlindClosing() {
+  const fisik = prompt("BLIND CLOSING SHIFT\nHitung seluruh uang tunai fisik di laci kasir lalu masukkan nominalnya (Rp):", "0");
+  if (fisik === null || fisik.trim() === "") return;
+  const res = await callApi("closeShiftBlind", { kasir: userNama, inputFisik: Number(fisik) || 0 });
+  if (!res.success) return toast(res.message);
+  const d = res.data;
+  alert(
+    `HASIL TUTUP SHIFT\n` +
+    `Shift: ${d.shiftId}\n` +
+    `Modal Awal: ${rp(d.modalAwal)}\n` +
+    `Penjualan Tunai: ${rp(d.totalTunai)}\n` +
+    `Penjualan Non-Tunai: ${rp(d.totalNonTunai)}\n` +
+    `Pickup Cash: ${rp(d.pickupCash)}\n` +
+    `Seharusnya di Laci: ${rp(d.expectedCash)}\n` +
+    `Input Fisik Kasir: ${rp(d.inputFisik)}\n` +
+    `SELISIH: ${rp(d.selisih)}`
+  );
+  loadPOS();
+}
+
+function addCartByCode() {
+  const input = document.getElementById("etScanPos");
+  const q = input.value.trim().toLowerCase();
+  if (!q) return;
+  const found = products.find(p =>
+    String(p.PLU).toLowerCase() === q ||
+    String(p.Barcode).toLowerCase() === q ||
+    String(p.NamaProduk).toLowerCase().includes(q)
+  );
+  if (!found) return toast("Produk tidak ditemukan");
+  addToCart(found);
+  input.value = "";
+  input.focus();
+}
+
+function addCartFromSelect() {
+  const idx = Number(document.getElementById("spQuickProd").value);
+  if (products[idx]) addToCart(products[idx]);
+}
+
+function addToCart(p) {
+  const plu = String(p.PLU);
+  const existing = cart.find(c => c.plu === plu);
+  if (existing) existing.qty++;
+  else {
+    cart.push({
+      plu,
+      nama: p.NamaProduk,
+      hargaNormal: Number(p.HargaNormal || 0),
+      hargaAktif: Number(p.HargaAktif || 0),
+      qty: 1
+    });
+  }
+  renderCart();
+}
+
+function changeCartQty(index, delta) {
+  cart[index].qty += delta;
+  if (cart[index].qty <= 0) cart.splice(index, 1);
+  renderCart();
+}
+
+function renderCart() {
+  const box = document.getElementById("llCartList");
+  if (cart.length === 0) {
+    box.innerHTML = `<div style="font-size:13px;color:var(--muted)">Keranjang masih kosong</div>`;
+    document.getElementById("tvPosSub").textContent = "Subtotal: Rp 0";
+    document.getElementById("tvPosDisc").textContent = "Hemat Promo: Rp 0";
+    document.getElementById("tvPosGrand").textContent = "TOTAL BAYAR: Rp 0";
+    return;
+  }
+
+  let sub = 0, disc = 0;
+  box.innerHTML = cart.map((item, idx) => {
+    sub += item.hargaNormal * item.qty;
+    disc += Math.max(0, (item.hargaNormal - item.hargaAktif) * item.qty);
+    return `
+      <div class="list-item flex-between">
+        <div>
+          <b>${esc(item.nama)}</b><br>
+          <small>${rp(item.hargaAktif)} × ${item.qty} = <b>${rp(item.hargaAktif * item.qty)}</b></small>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-yellow btn-sm" onclick="changeCartQty(${idx}, -1)">-</button>
+          <button class="btn btn-red btn-sm" onclick="changeCartQty(${idx}, 1)">+</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const grand = sub - disc;
+  document.getElementById("tvPosSub").textContent = `Subtotal: ${rp(sub)}`;
+  document.getElementById("tvPosDisc").textContent = `Hemat Promo: -${rp(disc)}`;
+  document.getElementById("tvPosGrand").textContent = `TOTAL BAYAR: ${rp(grand)}`;
+  document.getElementById("etBayar").value = Math.round(grand);
+}
+
+async function doCheckout() {
+  if (cart.length === 0) return toast("Keranjang masih kosong");
+  const body = {
+    kasir: userNama,
+    shiftId: activeShiftId,
+    metodeBayar: document.getElementById("spMetode").value,
+    bayar: Number(document.getElementById("etBayar").value || 0),
+    items: cart.map(c => ({ plu: c.plu, qty: c.qty }))
+  };
+  const res = await callApi("checkoutPOS", body);
+  if (!res.success) return toast(res.message);
+  cart = [];
+  renderCart();
+  printStrukPOS(res.data);
+  loadPOS();
+}
+
+async function loadTrxHistory() {
+  const res = await callApi("getTransactions");
+  if (!res.success) return;
+  const arr = (res.data || []).slice(0, 10);
+  const box = document.getElementById("llTrxHistory");
+  if (arr.length === 0) {
+    box.innerHTML = `<div style="font-size:12px;color:var(--muted)">Belum ada transaksi.</div>`;
+    return;
+  }
+  box.innerHTML = arr.map(t => `
+    <div class="list-item ${t.Status === 'VOID' ? 'void' : ''} flex-between">
+      <div style="font-size:12px;color:#1F2937">
+        <b>${esc(t.NoStruk)}</b> [${esc(t.Status)}]<br>
+        ${esc(t.Tanggal)} | ${esc(t.MetodeBayar)} | <b>${rp(t.GrandTotal)}</b>
+      </div>
+      ${t.Status === "SUKSES"
+        ? `<button class="btn btn-pink btn-sm" onclick="promptVoid('${esc(t.NoStruk)}')">Void</button>`
+        : ""}
+    </div>
+  `).join("");
+}
+
+async function promptVoid(noStruk) {
+  const pin = prompt(`Void Transaksi ${noStruk}\nMasukkan PIN Supervisor (default: 9999):`);
+  if (!pin) return;
+  const res = await callApi("voidTransaction", { noStruk, pin: pin.trim() });
+  if (res.success) {
+    toast("Transaksi berhasil di-VOID");
+    loadPOS();
+  } else toast(res.message);
+}
+
+function printStrukPOS(trx) {
+  const rows = (trx.items || []).map(it => `
+    <tr><td colspan="2">${esc(it.nama)}</td></tr>
+    <tr>
+      <td>${it.qty} x ${Math.round(it.hargaJual)}</td>
+      <td style="text-align:right">${Math.round(it.total)}</td>
+    </tr>
+  `).join("");
+
+  const html = `
+    <html><head><style>
+      body{font-family:monospace;width:260px;margin:0 auto;font-size:12px;color:#000}
+      h3,p{text-align:center;margin:2px 0}
+      table{width:100%;border-collapse:collapse}
+      hr{border:0;border-top:1px dashed #000}
+    </style></head><body>
+      <h3>AANG'S MART</h3>
+      <p>Struk Belanja Resmi</p>
+      <hr>
+      <div>No: ${esc(trx.noStruk)}</div>
+      <div>Tgl: ${esc(trx.tanggal)}</div>
+      <div>Kasir: ${esc(trx.kasir)}</div>
+      <hr>
+      <table>${rows}</table>
+      <hr>
+      <table>
+        <tr><td>Subtotal</td><td style="text-align:right">${rp(trx.subtotal)}</td></tr>
+        <tr><td>Hemat Promo</td><td style="text-align:right">-${rp(trx.totalDiskon)}</td></tr>
+        <tr><td><b>TOTAL</b></td><td style="text-align:right"><b>${rp(trx.grandTotal)}</b></td></tr>
+        <tr><td>Bayar (${esc(trx.metodeBayar)})</td><td style="text-align:right">${rp(trx.bayar)}</td></tr>
+        <tr><td>Kembali</td><td style="text-align:right">${rp(trx.kembali)}</td></tr>
+      </table>
+      <hr><p>Terima Kasih!</p>
+    </body></html>
+  `;
+  printHtmlDocument(`Struk_${trx.noStruk}`, html);
+}
+
+// =========================================================================
+// 3. MASTER PRODUK & AUTO ANTREAN LABEL
+// =========================================================================
+async function loadProducts() {
+  const res = await callApi("getProducts");
+  if (!res.success) return toast(res.message);
+  products = res.data || [];
+  const box = document.getElementById("llProdList");
+  box.innerHTML = products.map((p, idx) => `
+    <div class="list-item clickable ${p.IsPromoAktif ? 'promo' : ''}" onclick="fillProductForm(${idx})">
+      <b>${esc(p.PLU)} - ${esc(p.NamaProduk)}</b> ${p.IsPromoAktif ? '<b>[PROMO]</b>' : ''}<br>
+      Normal: ${rp(p.HargaNormal)} | Aktif: <b>${rp(p.HargaAktif)}</b><br>
+      Stok Rak: ${p.StokRak} | Gudang: ${p.StokGudang}
+    </div>
+  `).join("");
+}
+
+function fillProductForm(idx) {
+  const p = products[idx];
+  if (!p) return;
+  document.getElementById("etPPlu").value = p.PLU || "";
+  document.getElementById("etPBar").value = p.Barcode || "";
+  document.getElementById("etPNama").value = p.NamaProduk || "";
+  document.getElementById("etPKat").value = p.Kategori || "Makanan";
+  document.getElementById("etPHpp").value = Math.round(Number(p.HPP || 0));
+  document.getElementById("etPNorm").value = Math.round(Number(p.HargaNormal || 0));
+  document.getElementById("etPProm").value = Math.round(Number(p.HargaPromo || 0));
+  document.getElementById("etPStart").value = p.TglMulaiPromo || "";
+  document.getElementById("etPEnd").value = p.TglAkhirPromo || "";
+  document.getElementById("etPSRak").value = p.StokRak || 0;
+  document.getElementById("etPSGud").value = p.StokGudang || 0;
+  document.getElementById("etPMin").value = p.MinStok || 8;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetProductForm() {
+  document.getElementById("etPPlu").value = "";
+  document.getElementById("etPBar").value = "";
+  document.getElementById("etPNama").value = "";
+  document.getElementById("etPHpp").value = "";
+  document.getElementById("etPNorm").value = "";
+  document.getElementById("etPProm").value = "0";
+  document.getElementById("etPStart").value = "";
+  document.getElementById("etPEnd").value = "";
+  document.getElementById("etPSRak").value = "10";
+  document.getElementById("etPSGud").value = "20";
+  document.getElementById("etPMin").value = "8";
+}
+
+async function doSaveProduct() {
+  const plu = document.getElementById("etPPlu").value.trim();
+  const nama = document.getElementById("etPNama").value.trim();
+  if (!plu || !nama) return toast("PLU dan Nama Produk wajib diisi");
+  const minStok = Number(document.getElementById("etPMin").value || 8);
+  const product = {
+    PLU: plu,
+    Barcode: document.getElementById("etPBar").value.trim(),
+    NamaProduk: nama,
+    Kategori: document.getElementById("etPKat").value.trim() || "Umum",
+    HPP: Number(document.getElementById("etPHpp").value || 0),
+    HargaNormal: Number(document.getElementById("etPNorm").value || 0),
+    HargaPromo: Number(document.getElementById("etPProm").value || 0),
+    TglMulaiPromo: document.getElementById("etPStart").value.trim(),
+    TglAkhirPromo: document.getElementById("etPEnd").value.trim(),
+    StokRak: Number(document.getElementById("etPSRak").value || 0),
+    StokGudang: Number(document.getElementById("etPSGud").value || 0),
+    MinStok: minStok,
+    MaxStok: minStok * 4,
+    Satuan: "PCS"
+  };
+  const res = await callApi("saveProduct", { product });
+  if (res.success) {
+    toast(res.data?.labelQueued
+      ? "Produk disimpan & otomatis masuk Antrean Label!"
+      : "Produk disimpan!");
+    loadProducts();
+  } else toast(res.message);
+}
+
+// =========================================================================
+// 4. PLANOGRAM & CETAK PLANO
+// =========================================================================
+async function loadPlanogram() {
+  const resP = await callApi("getProducts");
+  if (resP.success) {
+    products = resP.data || [];
+    document.getElementById("spPlProd").innerHTML = products.map(p =>
+      `<option value="${esc(p.PLU)}">${esc(p.PLU)} - ${esc(p.NamaProduk)}</option>`
+    ).join("");
+  }
+  const resPl = await callApi("getPlanogram");
+  if (!resPl.success) return;
+  planograms = resPl.data || [];
+  const racks = ["Semua Rak", ...new Set(planograms.map(pl => pl.KodeRak))];
+  document.getElementById("spFilterRak").innerHTML = racks.map(r =>
+    `<option value="${esc(r)}">${esc(r)}</option>`
+  ).join("");
+  renderPlanoVisual();
+}
+
+async function doSavePlanogram() {
+  const plu = document.getElementById("spPlProd").value;
+  if (!plu) return toast("Pilih produk terlebih dahulu");
+  const item = {
+    KodeRak: document.getElementById("etPlRak").value.trim(),
+    NamaRak: document.getElementById("etPlNamaRak").value.trim(),
+    Shelving: Number(document.getElementById("etPlShelf").value || 1),
+    Urutan: Number(document.getElementById("etPlUrut").value || 1),
+    PLU: plu,
+    KK: Number(document.getElementById("etPlKK").value || 1),
+    DB: Number(document.getElementById("etPlDB").value || 1),
+    AB: Number(document.getElementById("etPlAB").value || 1)
+  };
+  const res = await callApi("savePlanogram", { item });
+  if (res.success) {
+    toast(`Planogram disimpan! Max Display: ${res.data?.maxDisplay || 0}`);
+    loadPlanogram();
+  } else toast(res.message);
+}
+
+async function deletePlanogramItem(idPlano) {
+  if (!confirm("Hapus item ini dari Planogram?")) return;
+  await callApi("deletePlanogram", { idPlano });
+  loadPlanogram();
+}
+
+function renderPlanoVisual() {
+  const filter = document.getElementById("spFilterRak").value || "Semua Rak";
+  const list = filter === "Semua Rak" ? planograms : planograms.filter(pl => pl.KodeRak === filter);
+  const box = document.getElementById("llPlanoVisual");
+  if (list.length === 0) {
+    box.innerHTML = `<div style="font-size:13px;color:var(--muted)">Belum ada data planogram.</div>`;
+    return;
+  }
+
+  const grouped = {};
+  list.forEach(pl => {
+    const key = `${pl.KodeRak} | Shelving ${pl.Shelving}`;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(pl);
+  });
+
+  box.innerHTML = Object.keys(grouped).map(key => `
+    <div class="shelf-box">
+      <div class="shelf-title">${esc(key)} (${grouped[key].length} Produk)</div>
+      ${grouped[key].map(plano => `
+        <div class="plano-row flex-between">
+          <div>
+            <b>#${plano.Urutan} | ${esc(plano.PLU)} - ${esc(plano.NamaProduk)}</b><br>
+            KK:${plano.KK} DB:${plano.DB} AB:${plano.AB} → <b>Max: ${plano.MaxDisplay}</b> | Rak: ${plano.StokRak}
+          </div>
+          <button class="btn btn-pink btn-sm" onclick="deletePlanogramItem('${esc(plano.IDPlano)}')">Hapus</button>
+        </div>
+      `).join("")}
+    </div>
+  `).join("");
+}
+
+async function printPlanogramPDF(saveToDrive) {
+  const filter = document.getElementById("spFilterRak").value || "Semua Rak";
+  const list = filter === "Semua Rak" ? planograms : planograms.filter(pl => pl.KodeRak === filter);
+  if (list.length === 0) return toast("Data planogram kosong");
+
+  const rows = list.map(plano => `
+    <tr>
+      <td>${esc(plano.KodeRak)}</td>
+      <td style="text-align:center">${plano.Shelving}</td>
+      <td style="text-align:center">${plano.Urutan}</td>
+      <td>${esc(plano.PLU)}</td>
+      <td>${esc(plano.NamaProduk)}</td>
+      <td style="text-align:center">${plano.KK}</td>
+      <td style="text-align:center">${plano.DB}</td>
+      <td style="text-align:center">${plano.AB}</td>
+      <td style="text-align:center"><b>${plano.MaxDisplay}</b></td>
+      <td style="text-align:right">${rp(plano.HargaAktif)}</td>
+    </tr>
+  `).join("");
+
+  const now = new Date().toLocaleString("id-ID");
+  const html = `
+    <html><head><style>
+      body{font-family:Arial,sans-serif;font-size:11px;padding:16px}
+      h2{margin:0 0 4px;color:#991B1B}
+      table{width:100%;border-collapse:collapse;margin-top:10px}
+      th,td{border:1px solid #333;padding:5px}
+      th{background:#C81E1E;color:#fff}
+    </style></head><body>
+      <h2>LEMBAR PLANOGRAM RAK - AANG'S MART</h2>
+      <div>Filter Rak: <b>${esc(filter)}</b> | Dicetak: ${esc(now)}</div>
+      <table>
+        <thead><tr>
+          <th>Kode Rak</th><th>Shlv</th><th>Urut</th><th>PLU</th><th>Nama Produk</th>
+          <th>KK</th><th>DB</th><th>AB</th><th>Max Display</th><th>Harga Aktif</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p style="margin-top:10px;font-size:10px">Rumus: Max Display = KK × DB × AB.</p>
+    </body></html>
+  `;
+
+  const name = `Planogram_${filter.replace(/\s+/g, "_")}_${Date.now()}`;
+  if (saveToDrive) {
+    const res = await callApi("savePdfToDrive", { fileName: name, html });
+    toast(res.success ? "PDF Planogram tersimpan di Google Drive!" : res.message);
+  } else {
+    printHtmlDocument(name, html);
+  }
+}
+
+// =========================================================================
+// 5. CETAK LABEL HARGA OTOMATIS
+// =========================================================================
+async function loadLabelQueue() {
+  const res = await callApi("getLabelQueue", { onlyPending: true });
+  if (!res.success) return toast(res.message);
+  labels = res.data || [];
+  const box = document.getElementById("llLabelList");
+
+  if (labels.length === 0) {
+    box.innerHTML = `<div class="list-item ok" style="padding:14px">Semua label perubahan harga sudah dicetak! 🎉</div>`;
+    return;
+  }
+
+  box.innerHTML = labels.map(l => {
+    const isPromo = l.TipeLabel === "PROMO";
+    const oldStr = isPromo && Number(l.HargaLama) > 0 ? ` (Normal: ${rp(l.HargaLama)})` : "";
+    const endStr = l.TglAkhirPromo ? `<br>Promo s/d: ${esc(l.TglAkhirPromo)}` : "";
+    return `
+      <div class="list-item ${isPromo ? 'promo' : ''}" style="background:${isPromo ? '#FEF08A' : '#FFFFFF'};border-color:${isPromo ? '#D97706' : '#991B1B'}">
+        <b>[${esc(l.TipeLabel)}] Rak ${esc(l.KodeRak)} | Shlv ${l.Shelving} | #${l.Urutan}</b><br>
+        ${esc(l.NamaProduk)} (PLU: ${esc(l.PLU)})<br>
+        Harga Baru: <b>${rp(l.HargaBaru)}</b>${esc(oldStr)}${endStr}
+      </div>
+    `;
+  }).join("");
+}
+
+async function printLabelsPDF(filterType, saveToDrive) {
+  let list = labels;
+  if (filterType === "NORMAL") list = labels.filter(l => l.TipeLabel === "NORMAL");
+  if (filterType === "PROMO") list = labels.filter(l => l.TipeLabel === "PROMO");
+  if (list.length === 0) return toast("Tidak ada label untuk dicetak");
+
+  const cards = list.map(l => {
+    const isPromo = l.TipeLabel === "PROMO";
+    const oldTag = isPromo && Number(l.HargaLama) > 0
+      ? `<span class="old">${rp(l.HargaLama)}</span>`
+      : `<span></span>`;
+    const footDate = isPromo && l.TglAkhirPromo
+      ? `s/d ${esc(l.TglAkhirPromo)}`
+      : `Tgl:${esc(l.TglEfektif)}`;
+    return `
+      <div class="tag ${isPromo ? 'promo' : 'normal'}">
+        <div class="tag-head">
+          <span>${isPromo ? "PROMO HEMAT" : "AANG'S MART"}</span>
+          <span>${esc(l.KodeRak)} S${l.Shelving}-${l.Urutan}</span>
+        </div>
+        <div class="tag-name">${esc(l.NamaProduk)}</div>
+        <div class="tag-price-row">${oldTag}<span class="new">${rp(l.HargaBaru)}</span></div>
+        <div class="tag-foot"><span>PLU:${esc(l.PLU)}</span><span>${footDate}</span></div>
+      </div>
+    `;
+  }).join("");
+
+  const html = `
+    <html><head><style>
+      @page { size: A4; margin: 8mm; }
+      body { font-family: Arial, sans-serif; margin: 0; }
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+      .tag { border: 2px solid #000; padding: 6px; height: 36mm; display: flex; flex-direction: column; justify-content: space-between; page-break-inside: avoid; box-sizing: border-box; }
+      .tag.promo { background: #FFF066; border-color: #C81E1E; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .tag.normal { background: #FFFFFF; }
+      .tag-head { display: flex; justify-content: space-between; font-size: 9px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 2px; }
+      .tag.promo .tag-head { color: #C81E1E; border-color: #C81E1E; }
+      .tag-name { font-size: 11px; font-weight: bold; line-height: 1.2; height: 26px; overflow: hidden; }
+      .tag-price-row { display: flex; justify-content: space-between; align-items: baseline; }
+      .old { font-size: 10px; text-decoration: line-through; color: #C81E1E; }
+      .new { font-size: 18px; font-weight: 900; }
+      .tag-foot { display: flex; justify-content: space-between; font-size: 8px; color: #333; }
+    </style></head><body><div class="grid">${cards}</div></body></html>
+  `;
+
+  const name = `PriceTags_${filterType}_${Date.now()}`;
+  if (saveToDrive) {
+    const res = await callApi("savePdfToDrive", { fileName: name, html });
+    toast(res.success ? "PDF Label Harga tersimpan di Google Drive!" : res.message);
+  } else {
+    printHtmlDocument(name, html);
+  }
+}
+
+async function markAllLabelsPrinted() {
+  if (labels.length === 0) return;
+  const ids = labels.map(l => l.IDLabel);
+  const res = await callApi("markLabelsPrinted", { ids });
+  if (res.success) {
+    toast(`${ids.length} label ditandai SUDAH DICETAK`);
+    loadLabelQueue();
+  } else toast(res.message);
+}
+
+// =========================================================================
+// 6. STOCK OPNAME PARSIAL PER RAK
+// =========================================================================
+async function loadSO() {
+  const res = await callApi("getPlanogram");
+  if (!res.success) return;
+  planograms = res.data || [];
+  const racks = [...new Set(planograms.map(pl => pl.KodeRak))];
+  document.getElementById("spSoRak").innerHTML = racks.map(r =>
+    `<option value="${esc(r)}">${esc(r)}</option>`
+  ).join("");
+  renderSoItems();
+}
+
+function renderSoItems() {
+  const rak = document.getElementById("spSoRak").value;
+  const list = planograms.filter(pl => pl.KodeRak === rak);
+  document.getElementById("llSoItems").innerHTML = list.map(plano => `
+    <div class="list-item flex-between">
+      <div style="font-size:12px">
+        <b>Shlv ${plano.Shelving} #${plano.Urutan} - ${esc(plano.NamaProduk)}</b><br>
+        PLU: ${esc(plano.PLU)} | Sistem Rak: <b>${plano.StokRak}</b> (Max: ${plano.MaxDisplay})
+      </div>
+      <input type="number" class="qty-input so-qty" data-plu="${esc(plano.PLU)}" value="${plano.StokRak}">
+    </div>
+  `).join("");
+}
+
+async function doSubmitSO() {
+  const kodeRak = document.getElementById("spSoRak").value;
+  if (!kodeRak) return;
+  const items = [...document.querySelectorAll(".so-qty")].map(el => ({
+    plu: el.dataset.plu,
+    fisikRak: Number(el.value || 0)
+  }));
+  const res = await callApi("submitSO", { kodeRak, user: userNama, items });
+  if (res.success) {
+    toast(`SO Rak ${kodeRak} selesai & stok terkoreksi!`);
+    loadSO();
+  } else toast(res.message);
+}
+
+// =========================================================================
+// 7. PERMINTAAN BARANG (PB) & RECEIVING
+// =========================================================================
+async function loadPB() {
+  const res = await callApi("getPBList");
+  if (!res.success) return;
+  const arr = res.data || [];
+  const box = document.getElementById("llPbList");
+  if (arr.length === 0) {
+    box.innerHTML = `<div style="font-size:13px;color:var(--muted)">Belum ada Permintaan Barang.</div>`;
+    return;
+  }
+  box.innerHTML = arr.map(pb => `
+    <div class="list-item ${pb.Status === 'DITERIMA' ? 'ok' : 'promo'} flex-between">
+      <div style="font-size:12px">
+        <b>${esc(pb.NoPB)}</b> [${esc(pb.Status)}]<br>
+        ${esc(pb.NamaProduk)} | Order: <b>${pb.QtyOrder} pcs</b>
+      </div>
+      ${pb.Status === "DRAFT"
+        ? `<button class="btn btn-green btn-sm" onclick="doReceivePB('${esc(pb.NoPB)}')">Terima</button>`
+        : ""}
+    </div>
+  `).join("");
+}
+
+async function doGeneratePB() {
+  const res = await callApi("generateAutoPB");
+  if (res.success) {
+    toast(`${res.data?.created || 0} draf PB baru dibuat`);
+    loadPB();
+  } else toast(res.message);
+}
+
+async function doReceivePB(noPB) {
+  const res = await callApi("receivePB", { noPB, user: userNama });
+  if (res.success) {
+    toast("Barang diterima & masuk Stok Gudang!");
+    loadPB();
+  } else toast(res.message);
+}
+
+// =========================================================================
+// 8. MODUL MAXDIS (PILIH RAK / SELURUH RAK + 5 MENIT PER PRODUK)
+// =========================================================================
+function handlePhotoPick(input, slot) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      // Kompres gambar agar ringan diupload ke GAS/Drive (max lebar 1024px, JPEG 75%)
+      const maxW = 1024;
+      let w = img.width, h = img.height;
+      if (w > maxW) {
+        h = Math.round(h * (maxW / w));
+        w = maxW;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+      const pureB64 = dataUrl.replace(/^data:.*;base64,/, "");
+
+      if (slot === "BEFORE") {
+        fotoSebelumB64 = pureB64;
+        const prev = document.getElementById("ivFotoSebelum");
+        prev.src = dataUrl;
+        prev.style.display = "block";
+        document.getElementById("btnFotoSebelum").textContent = "✓ Foto Sebelum Tersimpan (Ambil Ulang)";
+      } else {
+        fotoSesudahB64 = pureB64;
+        const prev = document.getElementById("ivFotoSesudah");
+        prev.src = dataUrl;
+        prev.style.display = "block";
+        document.getElementById("btnFotoSesudah").textContent = "✓ Foto Sesudah Tersimpan (Ambil Ulang)";
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function loadMaxdis() {
+  resetMaxdisForm();
+  const res = await callApi("getPlanogram");
+  if (res.success) {
+    planograms = res.data || [];
+    const rackOptions = ["SEMUA RAK", ...new Set(planograms.map(pl => pl.KodeRak))];
+    document.getElementById("spMaxdisRak").innerHTML = rackOptions.map(r =>
+      `<option value="${esc(r)}">${esc(r)}</option>`
+    ).join("");
+    updateMaxdisSelectedInfo();
+  }
+  loadMaxdisHistory();
+}
+
+function updateMaxdisSelectedInfo() {
+  const selectedRak = document.getElementById("spMaxdisRak").value || "SEMUA RAK";
+  activeMaxdisItems = selectedRak === "SEMUA RAK"
+    ? [...planograms]
+    : planograms.filter(pl => pl.KodeRak === selectedRak);
+
+  if (activeMaxdisItems.length === 0) {
+    document.getElementById("tvMaxdisInfo").textContent = "Belum ada produk di Planogram.";
+    document.getElementById("llMaxdisItems").innerHTML = "";
+    return;
+  }
+
+  const jumlahProduk = activeMaxdisItems.length;
+  const batasMenit = jumlahProduk * 5;
+  maxdisLimitMs = batasMenit * 60 * 1000;
+
+  let totalKurang = 0;
+  activeMaxdisItems.forEach(pl => {
+    totalKurang += Math.max(0, Number(pl.MaxDisplay) - Number(pl.StokRak));
+  });
+
+  document.getElementById("tvMaxdisInfo").textContent =
+    `Target: ${selectedRak} (${jumlahProduk} Produk)\n` +
+    `Total Kekurangan Display: ${totalKurang} pcs\n` +
+    `Batas SLA Otomatis: ${batasMenit} menit (${jumlahProduk} produk × 5 menit)`;
+
+  if (!maxdisRunning) {
+    document.getElementById("tvMaxdisTimer").textContent = formatMinSec(maxdisLimitMs / 1000);
+    document.getElementById("tvMaxdisTimerStatus").textContent =
+      `Siap Mulai • Batas Waktu ${batasMenit} Menit (${jumlahProduk} Produk)`;
+  }
+
+  renderMaxdisItemInputs();
+}
+
+function renderMaxdisItemInputs() {
+  document.getElementById("llMaxdisItems").innerHTML = activeMaxdisItems.map((pl, idx) => {
+    const kurang = Math.max(0, Number(pl.MaxDisplay) - Number(pl.StokRak));
+    return `
+      <div class="list-item flex-between">
+        <div style="font-size:12px">
+          <b>${esc(pl.KodeRak)} S${pl.Shelving} #${pl.Urutan} • ${esc(pl.NamaProduk)}</b><br>
+          Rak: ${pl.StokRak} / Max: ${pl.MaxDisplay} | Gudang: ${pl.StokGudang} (Kurang: ${kurang})
+        </div>
+        <input type="number" class="qty-input maxdis-qty" data-idx="${idx}" value="${kurang}">
+      </div>
+    `;
+  }).join("");
+}
+
+function resetMaxdisForm() {
+  maxdisRunning = false;
+  clearInterval(maxdisTimerHandle);
+  fotoSebelumB64 = "";
+  fotoSesudahB64 = "";
+  document.getElementById("inpFotoSebelum").value = "";
+  document.getElementById("inpFotoSesudah").value = "";
+  document.getElementById("ivFotoSebelum").style.display = "none";
+  document.getElementById("ivFotoSesudah").style.display = "none";
+  document.getElementById("btnFotoSebelum").textContent = "📷 Ambil Foto Sebelum Display";
+  document.getElementById("btnFotoSesudah").textContent = "📷 Ambil Foto Sesudah Display";
+  document.getElementById("spMaxdisRak").disabled = false;
+  document.getElementById("btnMulaiMaxdis").style.display = "block";
+  document.getElementById("boxMaxdisRunning").style.display = "none";
+
+  const box = document.getElementById("llMaxdisTimerBox");
+  box.className = "timer-box";
+  document.getElementById("tvMaxdisTimer").textContent = formatMinSec(maxdisLimitMs / 1000);
+  document.getElementById("tvMaxdisTimerStatus").textContent = "Siap Mulai • Batas 5 Menit × Jumlah Produk";
+
+  const btnFinish = document.getElementById("btnSelesaiMaxdis");
+  btnFinish.style.background = "";
+  btnFinish.textContent = "✓ Selesai Maxdis & Simpan";
+}
+
+function startMaxdis() {
+  if (activeMaxdisItems.length === 0) return toast("Tidak ada produk pada rak yang dipilih");
+  if (!fotoSebelumB64) return toast("Wajib ambil Foto Rak SEBELUM display dulu!");
+
+  maxdisRunning = true;
+  maxdisStartMs = Date.now();
+  maxdisStartStr = formatNowLocal();
+  document.getElementById("spMaxdisRak").disabled = true;
+  document.getElementById("btnMulaiMaxdis").style.display = "none";
+  document.getElementById("boxMaxdisRunning").style.display = "block";
+
+  updateMaxdisTimerUI();
+  clearInterval(maxdisTimerHandle);
+  maxdisTimerHandle = setInterval(updateMaxdisTimerUI, 1000);
+  toast(`Timer Maxdis ${maxdisLimitMs / 60000} menit dimulai!`);
+}
+
+function updateMaxdisTimerUI() {
+  if (!maxdisRunning) return;
+  const elapsedMs = Date.now() - maxdisStartMs;
+  const remainingMs = maxdisLimitMs - elapsedMs;
+  const batasMenit = maxdisLimitMs / 60000;
+  const box = document.getElementById("llMaxdisTimerBox");
+  const tvVal = document.getElementById("tvMaxdisTimer");
+  const tvStat = document.getElementById("tvMaxdisTimerStatus");
+  const btnFinish = document.getElementById("btnSelesaiMaxdis");
+
+  if (remainingMs >= 0) {
+    box.className = "timer-box running";
+    tvVal.textContent = formatMinSec(remainingMs / 1000);
+    tvStat.textContent = `⏱️ Sedang Berjalan • Batas ${batasMenit} Menit`;
+  } else {
+    box.className = "timer-box late";
+    tvVal.textContent = `TELAT +${formatMinSec((-remainingMs) / 1000)}`;
+    tvStat.textContent = `⚠️ MELEWATI BATAS ${batasMenit} MENIT (TERLAMBAT!)`;
+    btnFinish.style.background = "#DC2626";
+    btnFinish.textContent = "⚠️ Selesai Maxdis (STATUS TERLAMBAT)";
+  }
+}
+
+async function finishMaxdis() {
+  if (!maxdisRunning) return;
+  if (!fotoSesudahB64) return toast("Wajib ambil Foto Rak SESUDAH display sebelum klik Selesai!");
+
+  const selectedRak = document.getElementById("spMaxdisRak").value || "SEMUA RAK";
+  maxdisRunning = false;
+  clearInterval(maxdisTimerHandle);
+
+  const durasiDetik = Math.floor((Date.now() - maxdisStartMs) / 1000);
+  const batasDetik = Math.floor(maxdisLimitMs / 1000);
+
+  const items = [...document.querySelectorAll(".maxdis-qty")].map(el => {
+    const pl = activeMaxdisItems[Number(el.dataset.idx)];
+    return {
+      plu: String(pl.PLU),
+      namaProduk: String(pl.NamaProduk),
+      shelving: Number(pl.Shelving),
+      stokRakAwal: Number(pl.StokRak),
+      targetMaxDisplay: Number(pl.MaxDisplay),
+      qtyDitambah: Number(el.value || 0)
+    };
+  });
+
+  const body = {
+    karyawan: userNama,
+    kodeRak: selectedRak,
+    waktuMulai: maxdisStartStr,
+    durasiDetik,
+    batasDetik,
+    items,
+    fotoSebelum: fotoSebelumB64,
+    fotoSesudah: fotoSesudahB64
+  };
+
+  const res = await callApi("saveMaxdis", body);
+  if (!res.success) {
+    maxdisRunning = true;
+    maxdisTimerHandle = setInterval(updateMaxdisTimerUI, 1000);
+    return toast(res.message);
+  }
+  const status = res.data?.status || "SELESAI";
+  toast(`Maxdis ${selectedRak} tersimpan (${status}) & foto diarsip ke Drive!`);
+  loadMaxdis();
+}
+
+async function loadMaxdisHistory() {
+  const res = await callApi("getMaxdisLogs");
+  if (!res.success) return;
+  const arr = res.data || [];
+  const box = document.getElementById("llMaxdisHistory");
+  if (arr.length === 0) {
+    box.innerHTML = `<div style="font-size:13px;color:var(--muted)">Belum ada riwayat Maxdis.</div>`;
+    return;
+  }
+
+  box.innerHTML = arr.map(m => {
+    const isTelat = m.Status === "TERLAMBAT";
+    const durasi = Number(m.DurasiDetik || 0);
+    const batasMenit = Math.max(1, Math.floor(Number(m.BatasDetik || 300) / 60));
+    const linkBefore = m.FotoSebelumURL && m.FotoSebelumURL !== "-"
+      ? `<a href="${esc(m.FotoSebelumURL)}" target="_blank">📷 Foto Sebelum</a>` : "";
+    const linkAfter = m.FotoSesudahURL && m.FotoSesudahURL !== "-"
+      ? `<a href="${esc(m.FotoSesudahURL)}" target="_blank">📷 Foto Sesudah</a>` : "";
+
+    return `
+      <div class="list-item ${isTelat ? 'late' : 'ok'}" style="font-size:12px">
+        <b>[${esc(m.Status)}] ${esc(m.KodeRak)} (${esc(m.PLU)})</b><br>
+        Karyawan: ${esc(m.Karyawan)} | Total Tambah: +${m.QtyDitambah} pcs<br>
+        Durasi: ${Math.floor(durasi / 60)}m ${durasi % 60}d (Batas ${batasMenit}m) | ${esc(m.WaktuSelesai)}<br>
+        Rincian: ${esc(m.NamaProduk)}
+        ${(linkBefore || linkAfter) ? `<div class="drive-links">${linkBefore}${linkAfter}</div>` : ""}
+      </div>
+    `;
+  }).join("");
+}
+
+// =========================================================================
+// BOOTSTRAP
+// =========================================================================
+if (userNama) {
+  goHome();
+} else {
+  showScreen("scrLogin", "Aang's Mart");
+}
+</script>
+</body>
+</html>
